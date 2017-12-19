@@ -88,7 +88,7 @@ def bot():
         return 'OK',200
     '''
     if words[0] in ['create', 'สร้าง', 'สร้างห้อง']:
-        if room_map[userID] != None:
+        if room_map.get(userID) != None:
             replyStack.append('You are already in anothr room.\nPlease leave first')
             reply(replyToken, replyStack)
             return 'OK',200
@@ -113,7 +113,7 @@ def bot():
             replyStack.append('This Room ID is invalid')
             reply(replyToken, replyStack)
             return 'OK',200
-        if room_map[userID] != None:
+        if room_map.get(userID) != None:
             replyStack.append('You are already in anothr room.\nPlease leave first')
             reply(replyToken, replyStack)
             return 'OK',200
@@ -130,7 +130,7 @@ def bot():
 
     elif words[0] in ['quit','เลิก','ออก','เลิกเล่น','ออกจากห้อง','leave']:
         
-        if room_map[userID] == None:
+        if room_map.get(userID) == None:
             replyStack.append('Fail. You have not joined any room')
             reply(replyToken, replyStack)
             return 'OK',200
@@ -155,7 +155,7 @@ def bot():
 
     elif words[0] in ['ls','list','มีใครบ้าง','มีใครมั่ง']:
         lists = 'Users List\n'
-        if room_map[userID] == None:
+        if room_map.get(userID) == None:
             replyStack.append('Fail. You have not joined any room')
             reply(replyToken, replyStack)
             return 'OK',200
@@ -171,7 +171,7 @@ def bot():
         reply(replyToken, [lists])
         return 'OK',200
     elif words[0] in ['go','เริ่ม','เริ่มเล่น','เริ่มเกม','แจกไพ่','แจกเลย','แจก']:
-        if room_map[userID] == None:
+        if room_map.get(userID) == None:
             replyStack.append('Fail. You have not joined any room')
             reply(replyToken, replyStack)
             return 'OK',200
