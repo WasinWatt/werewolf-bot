@@ -1,5 +1,6 @@
 from flask import Flask, request, send_file, jsonify
 from flask_pymongo import PyMongo
+from pymongo import MongoClient
 from bson import json_util
 import json
 import requests
@@ -29,13 +30,15 @@ desc['Villager'] = 'Villager [Good guy] \uDBC0\uDC90\n   ทำอะไรไ�
 global LINE_API_KEY
 LINE_API_KEY = 'Bearer ' + Constant.Token
 
+client = MongoClient(Constant.MONGO_URI)
+client.drop_database('werewolf-bot')
+
 app = Flask(__name__)
 
-app.config['MONGO_DBNAME'] = 'werewolf'
+app.config['MONGO_DBNAME'] = 'werewolf-bot'
 app.config['MONGO_URI'] = Constant.MONGO_URI
 
 mongo = PyMongo(app)
-
 @app.route('/')
 def index():
     room_model = mongo.db.rooms
