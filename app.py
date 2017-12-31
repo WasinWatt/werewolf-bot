@@ -39,7 +39,7 @@ mongo = PyMongo(app)
 @app.route('/')
 def index():
     room_model = mongo.db.rooms
-    rooms = room_model.find({'id': '1111'})
+    rooms = room_model.find()
     data = [json.dumps(r, default=json_util.default) for r in rooms]
     return jsonify(data=data)
 
@@ -105,7 +105,7 @@ def bot():
 
     elif words[0] in ['join','play','เล่น','เล่นด้วย']:
         # Acknowledge all player that already in room.
-        if words.length == 1:
+        if len(words) == 1:
             replyStack.append('Please specify a Room ID')
             reply(replyToken, replyStack)
             return 'OK',200
