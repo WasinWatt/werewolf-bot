@@ -56,6 +56,7 @@ def bot():
     #locked = getLockingStatus()
     room_model = mongo.db.rooms
     player_model = mongo.db.players
+    
     replyStack = []
     msg_in_json = request.get_json()
     msg_in_string = json.dumps(msg_in_json)
@@ -71,6 +72,8 @@ def bot():
     
     text = msg_in_json["events"][0]['message']['text'].lower().strip()
     words = text.split()
+
+    this_player = player_model.find_one({'id': userID})
     '''
     if text in ['!lock','!locked']:
         lock()
@@ -91,8 +94,8 @@ def bot():
         return 'OK',200
     '''
     if words[0] in ['create', 'สร้าง', 'สร้างห้อง']:
-        if room_map.get(userID) != None:
-            replyStack.append('You are already in anothr room.\nPlease leave first')
+        if this_player != None:
+            replyStack.append('You are already in another room.\nPlease leave first')
             reply(replyToken, replyStack)
             return 'OK',200
 
@@ -116,31 +119,31 @@ def bot():
             replyStack.append('This Room ID is invalid')
             reply(replyToken, replyStack)
             return 'OK',200
-        if room_map.get(userID) != None:
+        if this_player != None:
             replyStack.append('You are already in anothr room.\nPlease leave first')
             reply(replyToken, replyStack)
             return 'OK',200
-        room_map[userID] = words[1]
-        number_of_player = countPlayer(room_map[userID])+1
-        players_in_room = player_model.find({'room': room_map[userID]})
+        # room_map[userID] = words[1]
+        number_of_player = countPlayer(words[1])+1
+        players_in_room = player_model.find({'room': words[1]})
         for player in players_in_room:
-            push(player['id'],[name +' has joined the room : ' + room_map[userID] + '! ('+str(number_of_player)+')'])
+            push(player['id'],[name +' has joined the room : ' + words[1] + '! ('+str(number_of_player)+')'])
 
-        player_model.insert({'room': room_map[userID], 'id': userID})
-        replyStack.append('You have joined the room : ' + room_map[userID] + '! ('+str(number_of_player)+')')
+        player_model.insert({'room': words[1], 'id': userID})
+        replyStack.append('You have joined the room : ' + words[1] + '! ('+str(number_of_player)+')')
         reply(replyToken, replyStack)
         return 'OK',200
 
     elif words[0] in ['quit','เลิก','ออก','เลิกเล่น','ออกจากห้อง','leave']:
         
-        if room_map.get(userID) == None:
+        if this_player == None:
             replyStack.append('Fail. You have not joined any room')
             reply(replyToken, replyStack)
             return 'OK',200
         
         player_model.delete_one({'id': userID})
-        number_of_player = countPlayer(room_map[userID])
-        players_in_room = player_model.find({'room': room_map[userID]})
+        number_of_player = countPlayer(this_player['room'])
+        players_in_room = player_model.find({'room': this_player['room']})
         for player in players_in_room:
             push(line,[name +' has left the room! ('+str(number_of_player)+')'])
 
@@ -158,12 +161,12 @@ def bot():
 
     elif words[0] in ['ls','list','มีใครบ้าง','มีใครมั่ง']:
         lists = 'Users List\n'
-        if room_map.get(userID) == None:
+        if this_player == None:
             replyStack.append('Fail. You have not joined any room')
             reply(replyToken, replyStack)
             return 'OK',200
         
-        players_in_room = player_model.find({'room': room_map[userID]})
+        players_in_room = player_model.find({'room': this_player['room']})
         count = players_in_room.count()
         if count == 0:
             lists = 'Room is empty.'
@@ -174,15 +177,15 @@ def bot():
         reply(replyToken, [lists])
         return 'OK',200
     elif words[0] in ['go','เริ่ม','เริ่มเล่น','เริ่มเกม','แจกไพ่','แจกเลย','แจก']:
-        if room_map.get(userID) == None:
+        if this_player == None:
             replyStack.append('Fail. You have not joined any room')
             reply(replyToken, replyStack)
             return 'OK',200
-        room = room_model.find_one({'id': room_map[userID]})
+        room = room_model.find_one({'id': this_player['room']})
         if room['creator'] != userID:
             replyStack.append('Fail. You do not have permission to start the game')
     
-        number_of_player = countPlayer(room_map[userID])
+        number_of_player = countPlayer(this_player['room'])
         if number_of_player < 5:
             pushSticker(userID,"1","107")
             reply(replyToken, ['Sorry, minimum players is 5'])
